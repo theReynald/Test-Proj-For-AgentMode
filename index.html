@@ -9,7 +9,8 @@
 <body>
     <div class="calculator">
         <div class="display">
-            <input type="text" id="result" readonly>
+            <label for="result" class="sr-only">Calculator Result</label>
+            <input type="text" id="result" readonly aria-label="Calculator display">
         </div>
         <div class="buttons">
             <button class="btn clear" onclick="clearDisplay()">C</button>
