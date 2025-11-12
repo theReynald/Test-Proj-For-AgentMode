@@ -2,6 +2,10 @@ let currentInput = '';
 let operator = '';
 let previousInput = '';
 
+// History management
+const MAX_HISTORY_ITEMS = 50;
+let calculationHistory = [];
+
 function appendToDisplay(value) {
     const display = document.getElementById('result');
     
@@ -46,7 +50,11 @@ function calculate() {
         if (isNaN(result) || !isFinite(result)) {
             display.value = 'Error';
         } else {
-            display.value = parseFloat(result.toFixed(10)).toString();
+            const formattedResult = parseFloat(result.toFixed(10)).toString();
+            display.value = formattedResult;
+            
+            // Add to history
+            addToHistory(expression, formattedResult);
         }
     } catch (error) {
         display.value = 'Error';
@@ -78,3 +86,109 @@ document.addEventListener('keydown', function(event) {
 
 // Add touch support for mobile devices
 document.addEventListener('touchstart', function() {}, {passive: true});
+
+// History functions
+function loadHistory() {
+    try {
+        const stored = localStorage.getItem('calculatorHistory');
+        if (stored) {
+            calculationHistory = JSON.parse(stored);
+            updateHistoryDisplay();
+        }
+    } catch (error) {
+        console.error('Error loading history:', error);
+        calculationHistory = [];
+    }
+}
+
+function saveHistory() {
+    try {
+        localStorage.setItem('calculatorHistory', JSON.stringify(calculationHistory));
+    } catch (error) {
+        console.error('Error saving history:', error);
+    }
+}
+
+function addToHistory(expression, result) {
+    // Don't add error results to history
+    if (result === 'Error') {
+        return;
+    }
+    
+    const historyItem = {
+        expression: expression,
+        result: result,
+        timestamp: new Date().toISOString()
+    };
+    
+    // Add to beginning of array (newest first)
+    calculationHistory.unshift(historyItem);
+    
+    // Limit to MAX_HISTORY_ITEMS
+    if (calculationHistory.length > MAX_HISTORY_ITEMS) {
+        calculationHistory = calculationHistory.slice(0, MAX_HISTORY_ITEMS);
+    }
+    
+    saveHistory();
+    updateHistoryDisplay();
+}
+
+function updateHistoryDisplay() {
+    const historyList = document.getElementById('historyList');
+    
+    if (calculationHistory.length === 0) {
+        historyList.innerHTML = '<p class="history-empty">No calculations yet</p>';
+        return;
+    }
+    
+    historyList.innerHTML = calculationHistory.map((item, index) => {
+        const date = new Date(item.timestamp);
+        const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        return `
+            <div class="history-item" data-result="${escapeHtml(item.result)}" data-index="${index}">
+                <div class="history-expression">${escapeHtml(item.expression)} =</div>
+                <div class="history-result">${escapeHtml(item.result)}</div>
+                <div class="history-time">${timeString}</div>
+            </div>
+        `;
+    }).join('');
+    
+    // Add click event listeners to history items
+    document.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', function() {
+            reuseResult(this.getAttribute('data-result'));
+        });
+    });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function reuseResult(result) {
+    const display = document.getElementById('result');
+    display.value = result;
+}
+
+function clearHistory() {
+    if (calculationHistory.length === 0) {
+        return;
+    }
+    
+    if (confirm('Are you sure you want to clear all calculation history?')) {
+        calculationHistory = [];
+        saveHistory();
+        updateHistoryDisplay();
+    }
+}
+
+function toggleHistory() {
+    const historyPanel = document.getElementById('historyPanel');
+    historyPanel.classList.toggle('open');
+}
+
+// Load history on page load
+window.addEventListener('DOMContentLoaded', loadHistory);
