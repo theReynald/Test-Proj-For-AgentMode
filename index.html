@@ -11,6 +11,12 @@
         <div class="display">
             <label for="result" class="sr-only">Calculator Result</label>
             <input type="text" id="result" readonly aria-label="Calculator display">
+            <button class="history-toggle" onclick="toggleHistory()" aria-label="Toggle calculation history">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </button>
         </div>
         <div class="buttons">
             <button class="btn clear" onclick="clearDisplay()">C</button>
@@ -37,6 +43,17 @@
             <button class="btn number" onclick="appendToDisplay('.')">.</button>
         </div>
     </div>
+    
+    <div class="history-panel" id="historyPanel">
+        <div class="history-header">
+            <h3>History</h3>
+            <button class="clear-history" onclick="clearHistory()" aria-label="Clear history">Clear</button>
+        </div>
+        <div class="history-list" id="historyList">
+            <p class="history-empty">No calculations yet</p>
+        </div>
+    </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
