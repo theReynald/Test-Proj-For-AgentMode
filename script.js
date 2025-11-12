@@ -146,13 +146,20 @@ function updateHistoryDisplay() {
         const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
         return `
-            <div class="history-item" onclick="reuseResult('${item.result.replace(/'/g, "\\'")}')">
+            <div class="history-item" data-result="${escapeHtml(item.result)}" data-index="${index}">
                 <div class="history-expression">${escapeHtml(item.expression)} =</div>
                 <div class="history-result">${escapeHtml(item.result)}</div>
                 <div class="history-time">${timeString}</div>
             </div>
         `;
     }).join('');
+    
+    // Add click event listeners to history items
+    document.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', function() {
+            reuseResult(this.getAttribute('data-result'));
+        });
+    });
 }
 
 function escapeHtml(text) {
